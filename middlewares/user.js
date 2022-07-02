@@ -17,11 +17,11 @@ exports.isLoggedIn = BigPromise(async (req, res, next) => {
     next();
 });
 
-exports.customRole = BigPromise(async (...roles) => {
+exports.customRole = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {
             return next(new CustomErros("You're Not allowed for this Resource", 403));
         }
         next();
     };
-});
+};

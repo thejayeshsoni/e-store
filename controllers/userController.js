@@ -166,8 +166,6 @@ exports.changePassword = BigPromise(async (req, res, next) => {
     cookieToken(user, res);
 });
 
-// TODO : Update this function as this doesn't updating the photo of the user... 
-/*
 exports.updateUserDetails = BigPromise(async (req, res, next) => {
 
     const email = req.body.email;
@@ -200,61 +198,6 @@ exports.updateUserDetails = BigPromise(async (req, res, next) => {
             secure_url: result.secure_url
         }
     }
-    
-    const user = await User.findByIdAndUpdate(req.user.id, newData, {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false
-    });
-
-    res.status(200).json({
-        success: true,
-        user
-    });
-});
-*/
-
-exports.updateUserDetails = BigPromise(async (req, res, next) => {
-
-    const email = req.body.email;
-
-    if (!email) {
-        return next(new CustomError("Please provide an email", 400))
-    }
-
-    const newData = {
-        name: req.body.name,
-        email: email,
-    };
-
-    if (req.files) {
-        const user = await User.findById(req.user.id);
-
-        const imageId = user.photo.id; // user is already found so no need of await again
-
-        // delete photo on cloudinary
-        const resp = await cloudinary.v2.uploader.destroy(imageId);
-
-        // upload the new photo
-        const result = await cloudinary.v2.uploader.upload(
-            req.files.photo.tempFilePath,
-            {
-                folder: "t-shirt-store-users",
-                width: 150,
-                crop: "scale"
-            }
-        );
-
-        newData.photo = {
-            id: result.public_id,
-            secure_url: result.secure_url
-        }
-    }
-
-    // one check to do
-    console.log(newData); // see if all three keys are present or not name, email & photo in the log
-
-    // if the photo field is coming as undefined/null then something is wrong with cloudinary folder that you created
 
     const user = await User.findByIdAndUpdate(req.user.id, newData, {
         new: true,
@@ -270,6 +213,91 @@ exports.updateUserDetails = BigPromise(async (req, res, next) => {
 
 exports.adminGetAllUsers = BigPromise(async (req, res, next) => {
     const users = await User.find();
+
+    res.status(200).json({
+        success: true,
+        users
+    });
+});
+
+exports.adminGetOneUser = BigPromise(async (req, res, next) => {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+        return next(CustomError("No user Found", 400));
+    }
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+exports.adminUpdateOneUserDetails = BigPromise(async (req, res, next) => {
+
+    const email = req.body.email;
+
+    if (!email) {
+        return next(new CustomError("Please provide an email", 400))
+    }
+
+    const newData = {
+        name: req.body.name,
+        email: email,
+        role: req.body.role
+    };
+    /*
+    if (req.files) {
+        const user = await User.findById(req.user.id);
+
+        const imageId = user.photo.id;
+
+        // delete photo on cloudinary
+        const resp = await cloudinary.v2.uploader.destroy(imageId);
+
+        // upload the new photo
+        const result = await cloudinary.v2.uploader.upload(req.files.photo.tempFilePath, {
+            folder: "t-shirt-store-users",
+            width: 150,
+            crop: "scale"
+        });
+        newData.photo = {
+            id: result.public_id,
+            secure_url: result.secure_url
+        }
+    }
+    */
+    const user = await User.findByIdAndUpdate(req.params.id, newData, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false
+    });
+
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+exports.adminDeleteOneUser = BigPromise(async (req, res, next) => {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        return next(new CustomError("No such User Found..!!", 401));
+    }
+
+    // First we have to delete the user photo from the cloudinary.. because if we delete the user from DB then we are not able to refer the image of that particular user
+    const imageId = user.photo.id;
+
+    await cloudinary.v2.uploader.destroy(imageId);
+
+    await user.remove();
+
+    res.status(200).json({
+        success: true
+    });
+});
+
+exports.managerGetAllUsers = BigPromise(async (req, res, next) => {
+    const users = await User.find({ role: "user" });
 
     res.status(200).json({
         success: true,
