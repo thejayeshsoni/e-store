@@ -42,5 +42,9 @@ app.get("/signuptest", (req, res) => {
     res.render("signUpTest");
 });
 
+app.get("/", (req, res) => {
+    res.render("home");
+});
+
 // export app js
 module.exports = app;
