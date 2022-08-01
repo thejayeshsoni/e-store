@@ -44,7 +44,7 @@ components:
       scheme: bearer
 
 paths:
-  /dummy:
+  /:
     get:
       tags:
         - Home
