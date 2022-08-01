@@ -48,7 +48,7 @@ paths:
     get:
       tags:
         - Home
-      summary: returns a greet message from LCO
+      summary: returns a greet message from thejayeshsoni
       responses:
         200:
           description: All good success
