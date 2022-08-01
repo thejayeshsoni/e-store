@@ -32,7 +32,7 @@ const orderSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    orderItem: [
+    orderItems: [
         {
             name: {
                 type: String,
@@ -88,4 +88,4 @@ const orderSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("Order".orderSchema);
+module.exports = mongoose.model("Order", orderSchema);
